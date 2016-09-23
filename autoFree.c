@@ -1,30 +1,41 @@
-/*
- * Memory management Functions
- *
- * Used to store pointers to heap allocated memory in a
- * linked list and then free the entire list when needed.
- *
- * Updated for wordladder coursework; now allows multiple lists
- * to be created and freed on demand
- *
- * Author: Ben Wainwright
- * Date: October 2015
- *
- */
+#include <stdio.h>
 
-#include "memory.h"
+#define DONT_REPLACE_MALLOC
+#include "autoFree.h"
 
-#include <stdlib.h>
-#include "utilities.h"
+typedef struct pointerList {
+  void* pnt;
+  struct pointerList* lastList;
+  struct pointerList* prev;
+} heapList_t;
 
+/*********************************************************
+/***************** Private Declarations ******************
+/*********************************************************/
 
-/* Private function declarations */
 heapList_t*  newHeapListNode( heapList_t* prev );
 heapList_t** getHeapListPtr( void );
 heapList_t*  getHeapList( void );
+heapList_t** toHeapListAndReturnList( void* pnt );
 
-/* Function definitions */
-heapList_t** toHeapList( void* pnt )
+/*********************************************************
+/***************** Function Definitions ******************
+/*********************************************************/
+
+autoFreeStatus_t startAutoFree( )
+{
+   newHeapList( );
+   return CONTINUE;
+}
+
+autoFreeStatus_t endAutoFree( )
+{
+   freeHeapList( );
+   return FINISH;
+}
+
+
+heapList_t** toHeapListAndReturnList( void* pnt )
 {
    static heapList_t* current = NULL;
    heapList_t*        prev    = NULL;
@@ -37,9 +48,14 @@ heapList_t** toHeapList( void* pnt )
    return &current;
 }
 
+void toHeapList( void* pnt )
+{
+   toHeapListAndReturnList( pnt );
+}
+
 heapList_t* newHeapListNode( heapList_t* prev )
 {
-   heapList_t* newNode = (heapList_t*)allocOfflist( sizeof( heapList_t ) );
+   heapList_t* newNode = (heapList_t*)allocOffList( sizeof( heapList_t ) );
    newNode->lastList   = NULL;
    newNode->prev       = prev;
    if(prev != NULL) {
@@ -51,7 +67,7 @@ heapList_t* newHeapListNode( heapList_t* prev )
 void newHeapList( void )
 {
    heapList_t** top    = getHeapListPtr( );
-   heapList_t*  newTop = (heapList_t*)allocOfflist( sizeof( heapList_t ) );
+   heapList_t*  newTop = (heapList_t*)allocOffList( sizeof( heapList_t ) );
 
    newTop->pnt      = NULL;
    newTop->prev     = NULL;
@@ -59,16 +75,15 @@ void newHeapList( void )
    *top             = newTop;
 }
 
-/* toHeapList with NULL gets the address of current heaplist top */
 heapList_t* getHeapList( void )
 {
-   heapList_t** list = toHeapList( NULL );
+   heapList_t** list = toHeapListAndReturnList( NULL );
    return *list;
 }
 
 heapList_t** getHeapListPtr( void )
 {
-   heapList_t** list = toHeapList( NULL );
+   heapList_t** list = toHeapListAndReturnList( NULL );
    return list;
 }
 
@@ -98,14 +113,14 @@ void freeHeapList( void )
    }
 }
 
-void* allocate( int size )
+void* allocate( size_t size )
 {
-   void* returnVal = allocOfflist( size );
+   void* returnVal = allocOffList( size );
    toHeapList( returnVal );
    return returnVal;
 }
 
-void* callocate( int num, int size )
+void* callocate( size_t num, size_t size )
 {
    void* returnVal = callocOffList( num, size );
    toHeapList( returnVal );
@@ -113,11 +128,22 @@ void* callocate( int num, int size )
 }
 
 
-void* callocOffList(int num, int size)
+void* callocOffList(size_t num, size_t size)
 {
    void* returnVal = NULL;
    if( ( returnVal = calloc( num, size ) ) == NULL ) {
-      die( "Failed to allocate memory" );
+      fprintf( stderr, "%s", "Failed to allocate memory" );
+      exit( 1 );
+   }
+   return returnVal;
+}
+
+void* allocOffList(size_t size)
+{
+   void* returnVal = NULL;
+   if((returnVal = malloc(size)) == NULL) {
+      fprintf( stderr, "%s", "Failed to allocate memory" );
+      exit( 1 );
    }
    return returnVal;
 }
