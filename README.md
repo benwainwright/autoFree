@@ -4,7 +4,7 @@ This library was written by me as part of the C Programming unit at Bristol Univ
 
 Calls to `malloc()` are replaced via the C Preprocessor by a function that calls `malloc()`, then adds the memory address to an internal data structure.
 
-This data structure is initialised with a call to `newHeapList()` and is series of linked lists which are each chained together by their initial node. This way, every call to `malloc()` adds a pointer to the most recent chain, which can then be iterated and deallocated using `freeHeapList()`. In order to simplify this process further, `newHeapList()` and `freeHeapList()` can be implicitly called using a `AUTOFREE` block as shown below:
+This data structure is initialised with a call to `newHeapList()` and is series of linked lists which are each chained together by their initial node. This way, every call to `malloc()` adds a pointer to the most recent chain, which can then be iterated and deallocated using `freeHeapList()`. In order to simplify this process further, `newHeapList()` and `freeHeapList()` can be implicitly called using an `AUTOFREE` block as shown below:
 
 ```
 int main()
