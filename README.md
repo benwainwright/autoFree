@@ -15,6 +15,4 @@ int main()
    }
 }
 ```
-In the above example, `foo` and `bar` will be automatically deallocated when the containing `AUTOFREE` block exits.
-
-It should be noted that this library does NOT at this stage handle calls to `reallocate()`
+In the above example, `foo` and `bar` will be automatically deallocated when the containing `AUTOFREE` block exits. It should be noted that this library does NOT at this stage handle calls to `reallocate()`
